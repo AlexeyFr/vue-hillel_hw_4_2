@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>hillel_hw_4_2</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Amatic+SC:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <style>
+    .title {
+      text-align: center;
+      font-size: 3rem;
+    }
+    select {
+      display: block;
+      margin: 0 auto;
+      width: 150px;
+      height: 24px;
+      background: #ffd133
+    }
+  </style>
+
+  <div id="app">
+
+    <h1>Whack-a-mole! <span class="score">{{score}}</span></h1>
+
+    <div v-show="!timeUp">
+      <div class="title">Сhoose difficulty</div>
+
+      <select v-model="countholes">
+        <option v-for="option in options" :value="option.value">{{option.text}}</option>
+      </select>
+
+      <button class="button" @click="startGame">Start!</button>
+    </div>
+
+    <holes-list v-show="timeUp" :countholes="countholes" :active="active" @shot="handlerShot"></holes-list>
+
+  </div>
+
+  <script>
+
+    var holesListCom = {
+
+      props: [
+        'countholes',
+        'active'
+      ],
+
+      template: `
+        <div class="game">
+          <div v-for="(hole, index) in countholes" :class="['hole', active == index ? 'up' : '']" @click="shot(index)">
+            <div class="mole">
+            </div>
+          </div>
+        </div>
+      `,
+
+      methods: {
+        shot(index) {
+          if (index == this.active) {
+            this.$emit('shot');
+          }
+        },
+      },
+
+    }
+
+    const app = new Vue({
+      el: '#app',
+
+      components: {
+        holesList: holesListCom
+      },
+
+      data: {
+        timeUp: false,
+        score: 0,
+        countholes: 3,
+        options: [
+          { text: 'Easy', value: 3 },
+          { text: 'Hard', value: 6 },
+        ],
+        lastHole: Number,
+        active: Number,
+      },
+
+      methods: {
+
+        startGame() {
+          this.timeUp = true;
+          this.score = 0;
+          this.peep();
+          setTimeout(() => this.timeUp = false, 10000)
+        },
+
+        peep() {
+          const time = this.randomTime(200, 1000);
+          const holes = document.querySelectorAll('.hole');
+          setTimeout(() => {
+            this.active = this.randomHole(holes);
+            if (this.timeUp) this.peep();
+          }, time);
+        },
+
+        randomTime(min, max) {
+          return Math.round(Math.random() * (max - min) + min);
+        },
+
+        randomHole(holes) {
+          const index = Math.floor(Math.random() * holes.length);
+          if (index === this.lastHole) {
+            return this.randomHole(holes);
+          }
+          this.lastHole = index;
+          return index;
+        },
+
+        handlerShot() {
+          this.score++;
+          this.active = Number;
+        }
+
+      },
+
+    })
+
+  </script>
+</body>
+</html>
